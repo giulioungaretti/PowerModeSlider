@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<winuiex:WindowEx
+    x:Class="PowerModeSlider.FlyoutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    mc:Ignorable="d"
+    Title="Power Mode"
+    Width="340"
+    Height="90"
+    IsAlwaysOnTop="True"
+    IsResizable="False"
+    IsMinimizable="False"
+    IsMaximizable="False"
+    IsTitleBarVisible="False"
+    IsShownInSwitchers="False">
+
+    <Window.SystemBackdrop>
+        <DesktopAcrylicBackdrop/>
+    </Window.SystemBackdrop>
+
+    <Grid Background="Transparent" Padding="16,12">
+        <StackPanel>
+            <!-- Slider -->
+            <Slider x:Name="PowerModeSlider"
+                    Minimum="0"
+                    Maximum="2"
+                    StepFrequency="1"
+                    TickFrequency="1"
+                    TickPlacement="Outside"
+                    SnapsTo="StepValues"
+                    HorizontalAlignment="Stretch"
+                    ValueChanged="PowerModeSlider_ValueChanged"/>
+
+            <!-- Labels under slider -->
+            <Grid Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="🔋" 
+                           FontSize="14" 
+                           HorizontalAlignment="Left"
+                           ToolTipService.ToolTip="Best Power Efficiency"/>
+                <TextBlock Grid.Column="1" 
+                           Text="⚖️" 
+                           FontSize="14" 
+                           HorizontalAlignment="Center"
+                           ToolTipService.ToolTip="Balanced"/>
+                <TextBlock Grid.Column="2" 
+                           Text="⚡" 
+                           FontSize="14" 
+                           HorizontalAlignment="Right"
+                           ToolTipService.ToolTip="Best Performance"/>
+            </Grid>
+            
+            <!-- Hidden text block for code compatibility -->
+            <TextBlock x:Name="CurrentModeText" Visibility="Collapsed"/>
+        </StackPanel>
+    </Grid>
+</winuiex:WindowEx>

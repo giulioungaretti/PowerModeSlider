@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="PowerModeSlider">
-
+<!--TODO: we should probably remove this the window does nothing-->
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
