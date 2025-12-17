@@ -1,4 +1,3 @@
-﻿```markdown
 # PowerModeSlider
 
 A lightweight Windows 11 system tray application for quickly switching power modes.
@@ -8,6 +7,8 @@ A lightweight Windows 11 system tray application for quickly switching power mod
 ![WinUI 3](https://img.shields.io/badge/WinUI-3-blue)
 
 ## Overview
+
+<img width="640" height="275" alt="Screenshot 2025-12-17 140227" src="https://github.com/user-attachments/assets/d2ece320-20c7-4602-ba8c-1223a64f37a8" />
 
 PowerModeSlider lives in your system tray and provides a simple slider flyout to switch between Windows 11 power modes instantly—no need to dig through Settings.
 
