@@ -1,47 +1,53 @@
 using System;
+using System.Runtime.Versioning;
+using PowerModeLib;
 
 namespace PowerModeSlider.Services;
 
+/// <summary>
+/// Implementation of <see cref="IPowerModeService"/> that wraps the PowerModeSwitcher library.
+/// </summary>
+[SupportedOSPlatform("windows10.0.22000")]
 public class PowerModeService : IPowerModeService
 {
-    public Guid BestPowerEfficiency => new Guid("00000000-0000-0000-0000-000000000001");
+    /// <inheritdoc/>
+    public Guid BestPowerEfficiency => PowerMode.BestPowerEfficiency;
 
-    public Guid Balanced => new Guid("00000000-0000-0000-0000-000000000001");
+    /// <inheritdoc/>
+    public Guid Balanced => PowerMode.Balanced;
 
-    public Guid BestPerformance => new Guid("00000000-0000-0000-0000-000000000001");
+    /// <inheritdoc/>
+    public Guid BestPerformance => PowerMode.BestPerformance;
 
+    /// <inheritdoc/>
+    public bool IsSupported() => PowerMode.IsSupported();
+
+    /// <inheritdoc/>
     public Guid GetPowerMode()
     {
-        return new Guid("00000000-0000-0000-0000-000000000001");
+        // Return AC power mode as the "current" mode (most common scenario when plugged in)
+        // Could be enhanced to detect actual power state and return appropriate mode
+        return GetPowerModeAC();
     }
 
-    public Guid GetPowerModeAC()
-    {
-        return new Guid("00000000-0000-0000-0000-000000000001");
-    }
-
-    public Guid GetPowerModeDC()
-    {
-        return new Guid("00000000-0000-0000-0000-000000000001");
-    }
-
-    public bool IsSupported()
-    {
-        return true;
-    }
-
+    /// <inheritdoc/>
     public bool TrySetPowerMode(Guid modeId)
     {
-        return true;
+        // Set both AC and DC modes for consistent behavior
+        var acResult = TrySetPowerModeAC(modeId);
+        var dcResult = TrySetPowerModeDC(modeId);
+        return acResult || dcResult;
     }
 
-    public bool TrySetPowerModeAC(Guid modeId)
-    {
-        return true;
-    }
+    /// <inheritdoc/>
+    public Guid GetPowerModeAC() => PowerMode.GetPowerModeAC();
 
-    public bool TrySetPowerModeDC(Guid modeId)
-    {
-        return true;
-    }
+    /// <inheritdoc/>
+    public Guid GetPowerModeDC() => PowerMode.GetPowerModeDC();
+
+    /// <inheritdoc/>
+    public bool TrySetPowerModeAC(Guid modeId) => PowerMode.TrySetPowerModeAC(modeId);
+
+    /// <inheritdoc/>
+    public bool TrySetPowerModeDC(Guid modeId) => PowerMode.TrySetPowerModeDC(modeId);
 }
