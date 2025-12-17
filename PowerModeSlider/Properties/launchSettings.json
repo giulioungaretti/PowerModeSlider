@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PowerModeSlider (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PowerModeSlider (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
