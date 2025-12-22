@@ -76,13 +76,19 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+
+    <!-- Disable .appinstaller generation by default; a local file path is not a valid AppInstallerUri -->
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
-    <AppInstallerUri>C:\Users\gungaretti\source\repos\</AppInstallerUri>
+
+    <!-- If you want auto-update via .appinstaller, set this to a valid https:// URL and re-enable GenerateAppInstallerFile -->
+    <AppInstallerUri></AppInstallerUri>
+
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <PackageCertificateThumbprint>83CBCBB023B655007C5A8718014A7902302CC68C</PackageCertificateThumbprint>
   </PropertyGroup>
