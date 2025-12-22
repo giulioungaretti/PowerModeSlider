@@ -40,7 +40,7 @@ public static class PowerMode
         try
         {
             if (GetPowerModeDC() == id) return false;
-            var hResult = PowerSetUserConfiguredDCPowerMode(id);
+            var hResult = PowerSetUserConfiguredDCPowerMode(ref id);
             return hResult == 0;
         }
         catch
@@ -63,7 +63,7 @@ public static class PowerMode
         try
         {
             if (GetPowerModeAC() == id) return false;
-            var hResult = PowerSetUserConfiguredACPowerMode(id);
+            var hResult = PowerSetUserConfiguredACPowerMode(ref id);
             return hResult == 0;
         }
         catch
@@ -107,10 +107,10 @@ public static class PowerMode
     }
 
     [DllImport("powrprof.dll")]
-    private static extern int PowerSetUserConfiguredDCPowerMode(Guid ModeGuid);
+    private static extern int PowerSetUserConfiguredDCPowerMode(ref Guid ModeGuid);
 
     [DllImport("powrprof.dll")]
-    private static extern int PowerSetUserConfiguredACPowerMode(Guid ModeGuid);
+    private static extern int PowerSetUserConfiguredACPowerMode(ref Guid ModeGuid);
 
     [DllImport("powrprof.dll")]
     private static extern int PowerGetUserConfiguredDCPowerMode(out Guid ModeGuid);
