@@ -14,23 +14,31 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="Assets\StoreLogo.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Assets\PowerBalanced.ico" />
+    <None Remove="Assets\PowerBalanced.png" />
+    <None Remove="Assets\PowerEfficiency.ico" />
+    <None Remove="Assets\PowerEfficiency.png" />
     <None Remove="Assets\PowerPerformance.ico" />
+    <None Remove="Assets\PowerPerformance.png" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="ViewModels\FlyoutWindow.xaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\PowerBalanced.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerBalanced.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerEfficiency.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerEfficiency.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerPerformance.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerPerformance.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
