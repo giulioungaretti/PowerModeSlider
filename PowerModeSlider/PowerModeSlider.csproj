@@ -80,8 +80,9 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!-- Keep trimming disabled for WinUI 3: trimming strips XAML/x:Bind types and
+         causes 0xc000027b stowed-exception startup crashes in packaged/sideloaded builds. -->
+    <PublishTrimmed>False</PublishTrimmed>
 
     <!-- Disable .appinstaller generation by default; a local file path is not a valid AppInstallerUri -->
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
