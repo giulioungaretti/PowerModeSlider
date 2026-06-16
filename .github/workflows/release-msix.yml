@@ -81,6 +81,7 @@ jobs:
           if (-not $packages) { throw 'No MSIX package was produced.' }
           $packages | ForEach-Object { Copy-Item $_.FullName -Destination $out -Force }
           Copy-Item (Join-Path $env:RUNNER_TEMP 'PowerModeSlider.cer') -Destination $out -Force
+          Copy-Item 'scripts/Install-PowerModeSlider.ps1' -Destination $out -Force
           Get-ChildItem $out | ForEach-Object { Write-Host $_.Name }
           "dir=$out" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
