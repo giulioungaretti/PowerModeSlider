@@ -4,12 +4,13 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap rescap desktop">
 
 	<Identity
 	  Name="a9d9c69a-754e-4826-9387-3dc0e855285c"
 	  Publisher="CN=gungaretti"
-	  Version="1.0.2.0" />
+	  Version="1.1.0.0" />
 
 	<Properties>
 		<DisplayName>PowerModeSlider</DisplayName>
@@ -38,6 +39,17 @@
 				<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
 				<uap:SplashScreen Image="Assets\SplashScreen.png" />
 			</uap:VisualElements>
+			<Extensions>
+				<desktop:Extension
+				  Category="windows.startupTask"
+				  Executable="PowerModeSlider.exe"
+				  EntryPoint="Windows.FullTrustApplication">
+					<desktop:StartupTask
+					  TaskId="PowerModeSliderStartup"
+					  Enabled="false"
+					  DisplayName="PowerModeSlider" />
+				</desktop:Extension>
+			</Extensions>
 		</Application>
 	</Applications>
 
