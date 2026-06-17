@@ -3,6 +3,12 @@ name: Build & Release MSIX
 # Builds a signed, sideloadable MSIX package so the app can be installed on
 # laptops without the Microsoft Store. When a release is published the packages
 # (and the public signing certificate) are attached to that release.
+#
+# A single self-signed certificate is generated once in the `cert` job and
+# shared with every matrix build via an artifact. This guarantees that the
+# public `PowerModeSlider.cer` attached to the release matches the certificate
+# that signed *every* architecture's MSIX (otherwise users on the "wrong"
+# architecture hit 0x800B0109 "the root certificate ... must be trusted").
 
 on:
   release:
@@ -13,7 +19,40 @@ permissions:
   contents: write
 
 jobs:
+  cert:
+    runs-on: windows-latest
+    outputs:
+      password: ${{ steps.gen.outputs.password }}
+    steps:
+      - name: Generate self-signed signing certificate
+        id: gen
+        shell: pwsh
+        run: |
+          $subject = 'CN=gungaretti'   # must match Package.appxmanifest Identity/Publisher
+          $cert = New-SelfSignedCertificate `
+            -Type CodeSigningCert `
+            -Subject $subject `
+            -KeyUsage DigitalSignature `
+            -FriendlyName 'PowerModeSlider Sideload' `
+            -CertStoreLocation 'Cert:\CurrentUser\My' `
+            -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')
+          $password = "pms-${{ github.run_id }}"
+          $secure = ConvertTo-SecureString -String $password -Force -AsPlainText
+          $out = Join-Path $env:RUNNER_TEMP 'cert'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Export-PfxCertificate -Cert $cert -FilePath (Join-Path $out 'sign.pfx') -Password $secure | Out-Null
+          Export-Certificate -Cert $cert -FilePath (Join-Path $out 'PowerModeSlider.cer') | Out-Null
+          "password=$password" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload signing certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: signing-cert
+          path: ${{ runner.temp }}/cert/*
+          retention-days: 1
+
   build:
+    needs: cert
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -32,25 +71,11 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Generate self-signed signing certificate
-        id: cert
-        shell: pwsh
-        run: |
-          $subject = 'CN=gungaretti'   # must match Package.appxmanifest Identity/Publisher
-          $cert = New-SelfSignedCertificate `
-            -Type CodeSigningCert `
-            -Subject $subject `
-            -KeyUsage DigitalSignature `
-            -FriendlyName 'PowerModeSlider Sideload' `
-            -CertStoreLocation 'Cert:\CurrentUser\My' `
-            -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}')
-          $password = "pms-${{ github.run_id }}"
-          $secure = ConvertTo-SecureString -String $password -Force -AsPlainText
-          $pfx = Join-Path $env:RUNNER_TEMP 'sign.pfx'
-          Export-PfxCertificate -Cert $cert -FilePath $pfx -Password $secure | Out-Null
-          Export-Certificate -Cert $cert -FilePath (Join-Path $env:RUNNER_TEMP 'PowerModeSlider.cer') | Out-Null
-          "pfx=$pfx"            | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "password=$password"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+      - name: Download shared signing certificate
+        uses: actions/download-artifact@v4
+        with:
+          name: signing-cert
+          path: cert
 
       - name: Restore
         run: dotnet restore PowerModeSlider/PowerModeSlider.csproj -r win-${{ matrix.platform }}
@@ -58,6 +83,7 @@ jobs:
       - name: Build signed MSIX
         shell: pwsh
         run: |
+          $pfx = (Resolve-Path 'cert/sign.pfx').Path
           msbuild PowerModeSlider/PowerModeSlider.csproj `
             /restore `
             /p:Configuration=Release `
@@ -68,8 +94,8 @@ jobs:
             /p:UapAppxPackageBuildMode=SideloadOnly `
             /p:AppxPackageSigningEnabled=true `
             /p:PackageCertificateThumbprint= `
-            /p:PackageCertificateKeyFile="${{ steps.cert.outputs.pfx }}" `
-            /p:PackageCertificatePassword="${{ steps.cert.outputs.password }}"
+            /p:PackageCertificateKeyFile="$pfx" `
+            /p:PackageCertificatePassword="${{ needs.cert.outputs.password }}"
 
       - name: Stage artifacts
         id: stage
@@ -80,7 +106,7 @@ jobs:
           $packages = Get-ChildItem -Path PowerModeSlider -Recurse -Include *.msix,*.msixbundle -ErrorAction SilentlyContinue
           if (-not $packages) { throw 'No MSIX package was produced.' }
           $packages | ForEach-Object { Copy-Item $_.FullName -Destination $out -Force }
-          Copy-Item (Join-Path $env:RUNNER_TEMP 'PowerModeSlider.cer') -Destination $out -Force
+          Copy-Item 'cert/PowerModeSlider.cer' -Destination $out -Force
           Copy-Item 'scripts/Install-PowerModeSlider.ps1' -Destination $out -Force
           Get-ChildItem $out | ForEach-Object { Write-Host $_.Name }
           "dir=$out" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -97,5 +123,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $files = Get-ChildItem '${{ steps.stage.outputs.dir }}' | ForEach-Object { $_.FullName }
+          # Every job attaches its own MSIX. The shared certificate and install
+          # script are identical across architectures, so only the x64 job
+          # uploads them to avoid a concurrent --clobber race on the same asset.
+          if ('${{ matrix.platform }}' -eq 'x64') {
+            $files = Get-ChildItem '${{ steps.stage.outputs.dir }}' | ForEach-Object { $_.FullName }
+          } else {
+            $files = Get-ChildItem '${{ steps.stage.outputs.dir }}' -Filter '*.msix' | ForEach-Object { $_.FullName }
+          }
           gh release upload '${{ github.event.release.tag_name }}' $files --clobber
