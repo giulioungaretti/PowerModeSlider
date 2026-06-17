@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Title="Power Mode"
     Width="340"
-    Height="110"
+    Height="90"
     IsAlwaysOnTop="True"
     IsResizable="False"
     IsMinimizable="False"
