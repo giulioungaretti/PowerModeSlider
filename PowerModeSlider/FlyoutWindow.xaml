@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Title="Power Mode"
     Width="340"
-    Height="150"
+    Height="110"
     IsAlwaysOnTop="True"
     IsResizable="False"
     IsMinimizable="False"
@@ -64,15 +64,6 @@
             
             <!-- Hidden text block for code compatibility -->
             <TextBlock x:Name="CurrentModeText" Visibility="Collapsed"/>
-
-            <!-- Start with Windows -->
-            <ToggleSwitch x:Name="StartupToggle"
-                          Margin="0,8,0,0"
-                          MinWidth="0"
-                          Header="Start with Windows"
-                          OffContent="Off"
-                          OnContent="On"
-                          Toggled="StartupToggle_Toggled"/>
         </StackPanel>
     </Grid>
 </winuiex:WindowEx>

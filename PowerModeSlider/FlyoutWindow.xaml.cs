@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using WinUIEx;
-using Windows.ApplicationModel;
 using PowerModeSlider.ViewModels;
 
 namespace PowerModeSlider;
@@ -66,7 +65,6 @@ public sealed partial class FlyoutWindow : WindowEx
 
     private bool _isShowing;
     private bool _lightDismissEnabled;
-    private bool _suppressStartupToggle;
     private readonly DispatcherTimer _activationTimer;
     private IntPtr _mouseHookHandle;
     private LowLevelMouseProc? _mouseProc;
@@ -107,7 +105,6 @@ public sealed partial class FlyoutWindow : WindowEx
         ViewModel.RefreshCurrentMode();
         CurrentModeText.Text = ViewModel.CurrentModeName;
         PowerModeSlider.Value = ViewModel.SelectedModeIndex;
-        RefreshStartupToggle();
 
         PositionNearTray();
         _windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -180,63 +177,6 @@ public sealed partial class FlyoutWindow : WindowEx
         ViewModel.SelectedModeIndex = (int)e.NewValue;
         CurrentModeText.Text = ViewModel.CurrentModeName;
     }
-
-    #region Start with Windows
-
-    private const string StartupTaskId = "PowerModeSliderStartup";
-
-    /// <summary>
-    /// Reflects the current StartupTask state in the toggle without firing the
-    /// Toggled handler. Also disables the toggle when the choice is locked by the
-    /// user (via Task Manager) or by policy.
-    /// </summary>
-    private async void RefreshStartupToggle()
-    {
-        try
-        {
-            var task = await StartupTask.GetAsync(StartupTaskId);
-            _suppressStartupToggle = true;
-            StartupToggle.IsOn = task.State is StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy;
-            StartupToggle.IsEnabled = task.State is StartupTaskState.Enabled or StartupTaskState.Disabled;
-            _suppressStartupToggle = false;
-        }
-        catch
-        {
-            // StartupTask is only available for packaged (MSIX) builds; hide otherwise.
-            StartupToggle.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private async void StartupToggle_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (_suppressStartupToggle) return;
-
-        try
-        {
-            var task = await StartupTask.GetAsync(StartupTaskId);
-            if (StartupToggle.IsOn)
-            {
-                var state = await task.RequestEnableAsync();
-                if (state is not (StartupTaskState.Enabled or StartupTaskState.EnabledByPolicy))
-                {
-                    // The user disabled it in Task Manager, or policy blocks it: revert the UI.
-                    _suppressStartupToggle = true;
-                    StartupToggle.IsOn = false;
-                    _suppressStartupToggle = false;
-                }
-            }
-            else
-            {
-                task.Disable();
-            }
-        }
-        catch
-        {
-            // Ignore: unsupported in unpackaged builds.
-        }
-    }
-
-    #endregion
 
     private void PositionNearTray()
     {
