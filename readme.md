@@ -44,6 +44,69 @@ The app uses the official Windows Power Management APIs (`PowerSetUserConfigured
 3. Drag the slider to your desired power mode
 4. **Right-click** the tray icon to exit
 
+## Development
+
+This project supports the [Windows App Development CLI (`winapp`)](https://github.com/microsoft/winappCli), which lets you build and run the packaged WinUI 3 app directly from the terminal — no Visual Studio required.
+
+### Prerequisites
+
+Install the .NET 10 SDK and the `winapp` CLI:
+
+```powershell
+winget install Microsoft.DotNet.SDK.10 --source winget
+winget install Microsoft.winappcli --source winget
+```
+
+### Run (dotnet run)
+
+The project includes the `Microsoft.Windows.SDK.BuildTools.WinApp` NuGet package, which hooks `dotnet run` into `winapp run` automatically. Run from the `PowerModeSlider/` sub-folder, passing a runtime identifier (the packaged app cannot build as the default `AnyCPU`):
+
+```powershell
+cd PowerModeSlider
+dotnet run -r win-x64
+```
+
+This registers a loose-layout package with Windows and launches the app with full package identity.
+
+### Run (manual winapp)
+
+Build first, then invoke `winapp run` pointing at the build output:
+
+```powershell
+dotnet build -c Debug -r win-x64
+winapp run .\bin\Debug\net10.0-windows10.0.19041.0\win-x64
+```
+
+### Package for distribution (MSIX)
+
+Build in Release, then pack and sign. Because the app's `Package.appxmanifest`
+declares `Publisher="CN=gungaretti"`, the signing certificate's subject **must
+match** that publisher and **must be trusted** on the machine, or Windows refuses
+to install the package (`0x800B010A`). `winapp pack` handles this for you — it
+reads the manifest, generates a matching development certificate, trusts it, and
+signs the package in one step:
+
+```powershell
+dotnet build -c Release -r win-x64
+winapp pack .\bin\Release\net10.0-windows10.0.19041.0\win-x64 --generate-cert --install-cert
+```
+
+Then install the generated `.msix` (e.g. `Add-AppxPackage .\PowerModeSlider_*.msix`).
+
+Prefer to manage the certificate explicitly? Generate one whose publisher matches
+the manifest, trust it, then sign with it:
+
+```powershell
+winapp cert generate --manifest .\Package.appxmanifest --install --output .\devcert.pfx --if-exists skip
+dotnet build -c Release -r win-x64
+winapp pack .\bin\Release\net10.0-windows10.0.19041.0\win-x64 --cert .\devcert.pfx
+```
+
+Use `winapp cert info .\devcert.pfx` to confirm the certificate subject matches the
+manifest publisher before signing.
+
+> **Tip:** Increment the `Version` in `Package.appxmanifest` before re-packing to allow Windows to update the installed package.
+
 ## Project Structure
 
 ```
