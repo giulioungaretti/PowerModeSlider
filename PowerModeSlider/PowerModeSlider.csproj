@@ -19,6 +19,9 @@
     <None Remove="Assets\PowerEfficiency.png" />
     <None Remove="Assets\PowerPerformance.ico" />
     <None Remove="Assets\PowerPerformance.png" />
+    <None Remove="Assets\PowerBalancedAwake.ico" />
+    <None Remove="Assets\PowerEfficiencyAwake.ico" />
+    <None Remove="Assets\PowerPerformanceAwake.ico" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="ViewModels\FlyoutWindow.xaml" />
@@ -36,6 +39,9 @@
     <Content Include="Assets\PowerEfficiency.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\PowerPerformance.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\PowerPerformance.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerEfficiencyAwake.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerBalancedAwake.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PowerPerformanceAwake.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerModeLib\PowerModeLib.csproj" />
+    <ProjectReference Include="..\KeepAwakeLib\KeepAwakeLib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="FlyoutWindow.xaml">

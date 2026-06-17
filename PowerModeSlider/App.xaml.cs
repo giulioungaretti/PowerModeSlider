@@ -41,6 +41,7 @@ public partial class App : Application
 
         // Register services
         services.AddSingleton<IPowerModeService, PowerModeService>();
+        services.AddSingleton<IKeepAwakeService, KeepAwakeService>();
 
         // Register view models
         services.AddTransient<PowerModeViewModel>();

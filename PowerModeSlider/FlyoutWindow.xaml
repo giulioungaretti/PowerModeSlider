@@ -8,7 +8,7 @@
     xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d"
     Title="Power Mode"
-    Width="340"
+    Width="400"
     Height="90"
     IsAlwaysOnTop="True"
     IsResizable="False"
@@ -21,8 +21,13 @@
         <DesktopAcrylicBackdrop/>
     </Window.SystemBackdrop>
 
-    <Grid Background="Transparent" Padding="16,12">
-        <StackPanel>
+    <Grid Background="Transparent" Padding="16,12" ColumnSpacing="14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" VerticalAlignment="Center">
             <!-- Slider -->
             <Slider x:Name="PowerModeSlider"
                     Minimum="0"
@@ -61,9 +66,25 @@
                        HorizontalAlignment="Right"
                        ToolTipService.ToolTip="Best Performance"/>
             </Grid>
-            
+
             <!-- Hidden text block for code compatibility -->
             <TextBlock x:Name="CurrentModeText" Visibility="Collapsed"/>
         </StackPanel>
+
+        <!-- Keep-awake toggle (caffeine). Keeps the system + display awake while on. -->
+        <ToggleButton x:Name="KeepAwakeToggle"
+                      Grid.Column="1"
+                      VerticalAlignment="Center"
+                      Width="48"
+                      Height="48"
+                      Padding="0"
+                      CornerRadius="10"
+                      Checked="KeepAwakeToggle_Toggled"
+                      Unchecked="KeepAwakeToggle_Toggled"
+                      ToolTipService.ToolTip="Keep awake">
+            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
+                      Glyph="&#xEC32;"
+                      FontSize="20"/>
+        </ToggleButton>
     </Grid>
 </winuiex:WindowEx>

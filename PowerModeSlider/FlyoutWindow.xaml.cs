@@ -105,6 +105,7 @@ public sealed partial class FlyoutWindow : WindowEx
         ViewModel.RefreshCurrentMode();
         CurrentModeText.Text = ViewModel.CurrentModeName;
         PowerModeSlider.Value = ViewModel.SelectedModeIndex;
+        KeepAwakeToggle.IsChecked = ViewModel.IsKeepAwake;
 
         PositionNearTray();
         _windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -176,6 +177,12 @@ public sealed partial class FlyoutWindow : WindowEx
         if (!_isShowing || ViewModel == null) return;
         ViewModel.SelectedModeIndex = (int)e.NewValue;
         CurrentModeText.Text = ViewModel.CurrentModeName;
+    }
+
+    private void KeepAwakeToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel == null) return;
+        ViewModel.IsKeepAwake = KeepAwakeToggle.IsChecked == true;
     }
 
     private void PositionNearTray()

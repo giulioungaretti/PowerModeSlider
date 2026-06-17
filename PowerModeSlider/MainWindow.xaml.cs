@@ -56,7 +56,8 @@ public sealed partial class MainWindow : Window
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ViewModel.SelectedModeIndex))
+        if (e.PropertyName == nameof(ViewModel.SelectedModeIndex) ||
+            e.PropertyName == nameof(ViewModel.IsKeepAwake))
         {
             UpdateTrayIcon();
         }
@@ -64,11 +65,15 @@ public sealed partial class MainWindow : Window
 
     private string GetIconPathForMode(int modeIndex)
     {
-        var iconName = modeIndex switch
+        var iconName = (modeIndex, ViewModel.IsKeepAwake) switch
         {
-            0 => "PowerEfficiency.ico",
-            1 => "PowerBalanced.ico",
-            2 => "PowerPerformance.ico",
+            (0, false) => "PowerEfficiency.ico",
+            (1, false) => "PowerBalanced.ico",
+            (2, false) => "PowerPerformance.ico",
+            (0, true) => "PowerEfficiencyAwake.ico",
+            (1, true) => "PowerBalancedAwake.ico",
+            (2, true) => "PowerPerformanceAwake.ico",
+            (_, true) => "PowerBalancedAwake.ico",
             _ => "PowerBalanced.ico"
         };
 

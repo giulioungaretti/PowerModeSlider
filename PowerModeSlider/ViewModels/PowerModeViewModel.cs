@@ -7,6 +7,7 @@ namespace PowerModeSlider.ViewModels;
 public partial class PowerModeViewModel : ObservableObject
 {
     private readonly IPowerModeService _powerModeService;
+    private readonly IKeepAwakeService _keepAwakeService;
 
     [ObservableProperty]
     private int _selectedModeIndex;
@@ -20,10 +21,30 @@ public partial class PowerModeViewModel : ObservableObject
     [ObservableProperty]
     private string _currentModeIcon = string.Empty;
 
-    public PowerModeViewModel(IPowerModeService powerModeService)
+    /// <summary>
+    /// Whether the machine is currently being kept awake. Toggling this drives
+    /// the keep-awake service.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isKeepAwake;
+
+    public PowerModeViewModel(IPowerModeService powerModeService, IKeepAwakeService keepAwakeService)
     {
         _powerModeService = powerModeService;
+        _keepAwakeService = keepAwakeService;
+        _isKeepAwake = keepAwakeService.IsAwake;
         RefreshCurrentMode();
+    }
+
+    partial void OnIsKeepAwakeChanged(bool value)
+    {
+        _keepAwakeService.SetAwake(value);
+    }
+
+    [RelayCommand]
+    private void ToggleKeepAwake()
+    {
+        IsKeepAwake = !IsKeepAwake;
     }
 
     public void RefreshCurrentMode()

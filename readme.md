@@ -17,7 +17,8 @@ PowerModeSlider lives in your system tray and provides a simple slider flyout to
 - 🔋 **System Tray App** – Runs quietly in the background
 - ⚡ **One-Click Access** – Click the tray icon to show/hide the slider
 - 🎚️ **Simple Slider UI** – Drag to switch between three power modes
-- 🔄 **Dynamic Icon** – Tray icon updates to reflect current power mode
+- ☕ **Keep Awake** – Toggle the coffee button to stop the machine sleeping (ON forever / OFF, no timers)
+- 🔄 **Dynamic Icon** – Tray icon updates to reflect current power mode, with an amber badge while keep-awake is on
 - 🪟 **Native Look** – Uses Windows 11 Acrylic backdrop
 
 ## Power Modes
@@ -112,7 +113,8 @@ manifest publisher before signing.
 ```
 PowerModeSlider/
 ├── PowerModeSlider/    # WinUI 3 tray application
-└── PowerModeLib/       # .NET library for power mode APIs
+├── PowerModeLib/       # .NET library for power mode APIs
+└── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
 ```
 
 

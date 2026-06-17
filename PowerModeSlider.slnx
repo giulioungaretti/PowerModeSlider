@@ -8,6 +8,7 @@
     <File Path="readme.md" />
   </Folder>
   <Project Path="PowerModeLib/PowerModeLib.csproj" Id="66f30fe5-40a6-44a8-a674-0820bb9e02f4" />
+  <Project Path="KeepAwakeLib/KeepAwakeLib.csproj" />
   <Project Path="PowerModeSlider/PowerModeSlider.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
