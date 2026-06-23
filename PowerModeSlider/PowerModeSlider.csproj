@@ -11,6 +11,18 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+
+    <!-- When warnings-as-errors is enabled (the CI PR build passes
+         -p:TreatWarningsAsErrors=true), keep this curated set of pre-existing
+         advisory/generated warnings as warnings so they don't fail the build,
+         while any *new* warning still breaks CI:
+           CS0612     - WinUIEx TrayIcon.Icon is obsolete; surfaced only in the
+                        generated XamlTypeInfo.g.cs, not in our source.
+           MVVMTK0045 - AOT-readiness advisory; this app ships non-trimmed and
+                        non-AOT (PublishTrimmed=False), so it does not apply.
+           CA1416     - Power-mode APIs require Win11 22000; calls are guarded at
+                        runtime via PowerMode.IsSupported(). -->
+    <WarningsNotAsErrors>CS0612;MVVMTK0045;CA1416</WarningsNotAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\PowerBalanced.ico" />

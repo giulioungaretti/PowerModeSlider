@@ -1,0 +1,47 @@
+name: CI
+
+# Continuous integration: build every pull request (and pushes to main) with
+# warnings treated as errors, so any new compiler/analyzer warning blocks the
+# merge. Continuous delivery (signed MSIX packages) is handled separately by
+# release-msix.yml when a release is published.
+#
+# A small, documented set of pre-existing advisory/generated warnings is kept
+# as warnings (not errors) via <WarningsNotAsErrors> in PowerModeSlider.csproj;
+# see that file for the rationale.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64, arm64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore PowerModeSlider/PowerModeSlider.csproj -r win-${{ matrix.platform }}
+
+      - name: Build (warnings as errors)
+        run: >
+          dotnet build PowerModeSlider/PowerModeSlider.csproj
+          -c Release
+          -r win-${{ matrix.platform }}
+          --no-restore
+          -p:TreatWarningsAsErrors=true
