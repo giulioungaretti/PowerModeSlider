@@ -45,3 +45,4 @@ jobs:
           -r win-${{ matrix.platform }}
           --no-restore
           -p:TreatWarningsAsErrors=true
+          -p:PublishReadyToRun=false
