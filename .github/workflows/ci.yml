@@ -46,3 +46,5 @@ jobs:
           --no-restore
           -p:TreatWarningsAsErrors=true
           -p:PublishReadyToRun=false
+          -p:AppxPackageSigningEnabled=false
+          -p:GenerateAppxPackageOnBuild=false
