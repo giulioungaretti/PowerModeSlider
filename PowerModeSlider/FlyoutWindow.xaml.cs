@@ -37,6 +37,9 @@ public sealed partial class FlyoutWindow : WindowEx
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr hwnd);
+
     private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -62,6 +65,13 @@ public sealed partial class FlyoutWindow : WindowEx
     #endregion
 
     public PowerModeViewModel ViewModel { get; }
+
+    // Logical (DPI-independent) size of the flyout in device-independent pixels.
+    // The window is resized to physical pixels on every show so it scales with the
+    // monitor DPI; without this the window stays at 400x90 physical px while WinUI
+    // renders the content scaled, clipping it on high-DPI displays.
+    private const int LogicalWidth = 400;
+    private const int LogicalHeight = 90;
 
     private bool _isShowing;
     private bool _lightDismissEnabled;
@@ -107,8 +117,9 @@ public sealed partial class FlyoutWindow : WindowEx
         PowerModeSlider.Value = ViewModel.SelectedModeIndex;
         KeepAwakeToggle.IsChecked = ViewModel.IsKeepAwake;
 
-        PositionNearTray();
         _windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        ResizeForDpi();
+        PositionNearTray();
         AppWindow.Show();
         SetForegroundWindow(_windowHandle);
 
@@ -183,6 +194,20 @@ public sealed partial class FlyoutWindow : WindowEx
     {
         if (ViewModel == null) return;
         ViewModel.IsKeepAwake = KeepAwakeToggle.IsChecked == true;
+    }
+
+    /// <summary>
+    /// Resizes the window to its logical size scaled to the current monitor DPI.
+    /// AppWindow works in physical pixels, so we must apply the scale factor
+    /// ourselves; otherwise the content (rendered at the monitor scale) is clipped.
+    /// </summary>
+    private void ResizeForDpi()
+    {
+        var dpi = GetDpiForWindow(_windowHandle);
+        var scale = dpi == 0 ? 1.0 : dpi / 96.0;
+        var width = (int)Math.Round(LogicalWidth * scale);
+        var height = (int)Math.Round(LogicalHeight * scale);
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
     }
 
     private void PositionNearTray()

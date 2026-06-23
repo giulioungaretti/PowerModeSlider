@@ -8,8 +8,6 @@
     xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d"
     Title="Power Mode"
-    Width="400"
-    Height="90"
     IsAlwaysOnTop="True"
     IsResizable="False"
     IsMinimizable="False"

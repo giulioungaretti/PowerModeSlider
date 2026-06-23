@@ -8,7 +8,7 @@ A lightweight Windows 11 system tray application for quickly switching power mod
 
 ## Overview
 
-<img width="640" height="275" alt="Screenshot 2025-12-17 140227" src="https://github.com/user-attachments/assets/d2ece320-20c7-4602-ba8c-1223a64f37a8" />
+<img width="640" alt="PowerModeSlider flyout showing the power-mode slider and keep-awake toggle in the system tray" src="docs/flyout.png" />
 
 PowerModeSlider lives in your system tray and provides a simple slider flyout to switch between Windows 11 power modes instantly—no need to dig through Settings.
 
