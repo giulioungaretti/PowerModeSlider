@@ -1,0 +1,77 @@
+name: Prepare Microsoft Store packages
+
+# Build/download only. No signing secrets, GitHub release, or Store submission.
+# Set the four repository variables from the reserved product's Partner Center identity.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version: Major.Minor.Build.0 (for example 1.5.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  STORE_IDENTITY_NAME: ${{ vars.STORE_IDENTITY_NAME }}
+  STORE_IDENTITY_PUBLISHER: ${{ vars.STORE_IDENTITY_PUBLISHER }}
+  STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.STORE_PUBLISHER_DISPLAY_NAME }}
+  STORE_DISPLAY_NAME: ${{ vars.STORE_DISPLAY_NAME }}
+  STORE_VERSION: ${{ inputs.version }}
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require reserved product identity and valid version
+        shell: pwsh
+        run: |
+          .\scripts\Build-StorePackage.ps1 `
+            -IdentityName $env:STORE_IDENTITY_NAME `
+            -Publisher $env:STORE_IDENTITY_PUBLISHER `
+            -PublisherDisplayName $env:STORE_PUBLISHER_DISPLAY_NAME `
+            -DisplayName $env:STORE_DISPLAY_NAME `
+            -Version $env:STORE_VERSION `
+            -ValidateOnly
+
+  package:
+    needs: validate
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+      - name: Build and inspect unsigned Store upload
+        shell: pwsh
+        env:
+          STORE_ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          .\scripts\Build-StorePackage.ps1 `
+            -IdentityName $env:STORE_IDENTITY_NAME `
+            -Publisher $env:STORE_IDENTITY_PUBLISHER `
+            -PublisherDisplayName $env:STORE_PUBLISHER_DISPLAY_NAME `
+            -DisplayName $env:STORE_DISPLAY_NAME `
+            -Version $env:STORE_VERSION `
+            -Architecture $env:STORE_ARCHITECTURE
+      - name: Upload package and inspection report
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowerModeSlider-Store-${{ inputs.version }}-${{ matrix.architecture }}
+          path: |
+            artifacts\store\${{ inputs.version }}\${{ matrix.architecture }}\*.msixupload
+            artifacts\store\${{ inputs.version }}\${{ matrix.architecture }}\AppxManifest.xml
+            artifacts\store\${{ inputs.version }}\${{ matrix.architecture }}\package-validation.json
+          if-no-files-found: error
+          retention-days: 7

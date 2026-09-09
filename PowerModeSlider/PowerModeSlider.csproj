@@ -118,4 +118,6 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <PackageCertificateThumbprint>83CBCBB023B655007C5A8718014A7902302CC68C</PackageCertificateThumbprint>
   </PropertyGroup>
+
+  <Import Project="Properties\StorePackaging.targets" Condition="'$(StorePackaging)' == 'true'" />
 </Project>

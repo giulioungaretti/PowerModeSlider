@@ -1,0 +1,48 @@
+<Project>
+  <!-- Opt-in only: development and signed sideload releases keep their existing settings. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishAot>false</PublishAot>
+    <PublishProfile></PublishProfile>
+
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <UapAppxPackageBuildMode>StoreOnly</UapAppxPackageBuildMode>
+    <AppxBundle>Never</AppxBundle>
+    <AppxAutoIncrementPackageRevision>false</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>false</GenerateTestArtifacts>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <GenerateTemporaryStoreCertificate>false</GenerateTemporaryStoreCertificate>
+    <PackageCertificateThumbprint></PackageCertificateThumbprint>
+    <PackageCertificateKeyFile></PackageCertificateKeyFile>
+    <PackageCertificatePassword></PackageCertificatePassword>
+    <AppxSymbolPackageEnabled>true</AppxSymbolPackageEnabled>
+    <!-- Current MSIX tooling cannot strip PDBs. Keep them in the upload, not the installed app. -->
+    <AppxPackageIncludePrivateSymbols>false</AppxPackageIncludePrivateSymbols>
+  </PropertyGroup>
+
+  <!-- Supplying this item prevents the SDK from selecting the development manifest. -->
+  <ItemGroup Condition="'$(StoreManifestPath)' != ''">
+    <AppxManifest Include="$(StoreManifestPath)" />
+  </ItemGroup>
+
+  <Target Name="ValidateStorePackaging" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(Configuration)' != 'Release'"
+           Text="Store packaging requires Release configuration." />
+    <Error Condition="'$(RuntimeIdentifier)' != 'win-x64' and '$(RuntimeIdentifier)' != 'win-arm64'"
+           Text="Store packaging supports win-x64 and win-arm64 only." />
+    <Error Condition="'$(StoreManifestPath)' == '' or !Exists('$(StoreManifestPath)')"
+           Text="Store packaging requires an identity-stamped manifest. Use scripts\Build-StorePackage.ps1." />
+    <Error Condition="'$(AppxPackageSigningEnabled)' != 'false' or '$(AppxAutoIncrementPackageRevision)' != 'false'"
+           Text="Store packaging must be unsigned with automatic version increments disabled." />
+    <Error Condition="'$(SelfContained)' != 'true' or '$(WindowsAppSDKSelfContained)' != 'true' or '$(PublishTrimmed)' != 'false'"
+           Text="Store packaging requires self-contained .NET and Windows App SDK, without trimming." />
+  </Target>
+</Project>
