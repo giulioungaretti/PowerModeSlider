@@ -36,7 +36,8 @@ The app uses the official Windows Power Management APIs (`PowerSetUserConfigured
 ## Requirements
 
 - Windows 11 (Build 22000 or later)
-- .NET 10 Runtime
+- Development/current sideload builds: .NET 10 Runtime and the matching Windows App Runtime
+- Store-specific packages include both runtimes; the Store release is not published yet
 
 ## Usage
 
@@ -78,7 +79,7 @@ dotnet build -c Debug -r win-x64
 winapp run .\bin\Debug\net10.0-windows10.0.19041.0\win-x64
 ```
 
-### Package for distribution (MSIX)
+### Package for sideload distribution (MSIX)
 
 Build in Release, then pack and sign. Because the app's `Package.appxmanifest`
 declares `Publisher="CN=gungaretti"`, the signing certificate's subject **must
@@ -108,6 +109,19 @@ manifest publisher before signing.
 
 > **Tip:** Increment the `Version` in `Package.appxmanifest` before re-packing to allow Windows to update the installed package.
 
+### Prepare Microsoft Store packages
+
+The Store name is **not yet reserved**. The app features are implemented, but
+reservation, listing/privacy materials, clean-machine testing, and certification
+still need to be completed.
+
+The separate [Store release guide](docs/store-release.md) documents the required
+Partner Center identity, local packaging commands, the manual
+**Prepare Microsoft Store packages** workflow, and the first-submission checklist.
+It produces unsigned, self-contained x64 and ARM64 `.msixupload` files without a
+development certificate or automatic Store submission. The existing sideload
+release workflow and development identity are unchanged.
+
 ## Project Structure
 
 ```
@@ -116,5 +130,4 @@ PowerModeSlider/
 ├── PowerModeLib/       # .NET library for power mode APIs
 └── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
 ```
-
 
