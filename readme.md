@@ -108,6 +108,53 @@ manifest publisher before signing.
 
 > **Tip:** Increment the `Version` in `Package.appxmanifest` before re-packing to allow Windows to update the installed package.
 
+### Manual flyout runtime regressions (expected RED)
+
+`scripts\Test-FlyoutDismissal.ps1` tests an external compiled executable using
+PowerShell 7 and controlled native windows on an interactive Windows 11 desktop.
+It requires neither a new production class nor a unit-test project. This
+tests-first layer leaves production code unchanged: the expected baseline result
+is **six behavioral failures and three passing controls**, with
+`InfrastructureError` equal to `null`. See [issue #16](https://github.com/giulioungaretti/PowerModeSlider/issues/16)
+for the bug investigation; the dependent fix layer will make the same tests green.
+
+From the repository root, build an isolated unpackaged app and run the harness.
+No Visual Studio, `winapp`, package installation, or replacement of an installed
+app is needed. These commands target ARM64; on x64, use `win-x64`, `Platform=x64`,
+and the corresponding `bin\x64` output path.
+
+```powershell
+dotnet build .\PowerModeSlider\PowerModeSlider.csproj --no-restore -c Debug -r win-arm64 -p:Platform=ARM64 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -p:TreatWarningsAsErrors=true
+# If assets/dependencies are missing, rerun the build without --no-restore.
+# Choose an existing directory outside the repository for the JSON report.
+$resultsPath = Join-Path $env:TEMP 'PowerModeSlider-flyout-red.json'
+pwsh -NoProfile -File .\scripts\Test-FlyoutDismissal.ps1 -AppPath .\PowerModeSlider\bin\ARM64\Debug\net10.0-windows10.0.19041.0\win-arm64\PowerModeSlider.exe -ResultsPath $resultsPath
+$LASTEXITCODE
+Get-Content -LiteralPath $resultsPath
+```
+
+The harness launches and stops only its own app process, temporarily controls
+foreground windows and the cursor, and attempts to restore both afterward.
+Keep the desktop unlocked and avoid interacting with it during the run.
+It verifies a visible, foreground flyout and an actual focus switch before
+150 ms in each of five early trials, then checks later focus loss. The controls
+cover an interior click, a non-activating outside click, and repeated native
+`NIN_SELECT` callbacks.
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | All runtime assertions passed. |
+| `1` | Valid fixture with behavioral failures (expected RED on unchanged main). |
+| `2` | Setup, fixture, or cleanup failure; **not** valid RED evidence. |
+
+For the expected RED result, all five early focus-loss trials and the later
+focus-loss trial fail; all three controls pass. Inspect the JSON counts and
+`InfrastructureError`, not just the exit code. If desktop interference invalidates
+the fixture, retry without changing assertions. Physical tray clicks and touch
+remain manual and unverified: the callback control is not a physical tray test.
+This interactive suite is not run by hosted CI, so ordinary Windows build checks
+can pass while these runtime regressions remain RED.
+
 ## Project Structure
 
 ```
@@ -116,5 +163,4 @@ PowerModeSlider/
 ├── PowerModeLib/       # .NET library for power mode APIs
 └── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
 ```
-
 
