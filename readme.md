@@ -108,15 +108,28 @@ manifest publisher before signing.
 
 > **Tip:** Increment the `Version` in `Package.appxmanifest` before re-packing to allow Windows to update the installed package.
 
-### Manual flyout runtime regressions (expected RED)
+### UI-independent regression tests
+
+```powershell
+dotnet test .\PowerModeSlider.Tests\PowerModeSlider.Tests.csproj -c Release -p:TreatWarningsAsErrors=true
+```
+
+The 16 dismissal-state and screen-bounds cases compile the same production
+sources without loading WinUI or changing system power settings. CI runs them
+in an Ubuntu job alongside the existing x64/ARM64 Windows build matrix.
+Windows activation and actual mouse/touch input still require runtime checks.
+
+### Manual flyout runtime regressions (baseline RED, fix GREEN)
 
 `scripts\Test-FlyoutDismissal.ps1` tests an external compiled executable using
 PowerShell 7 and controlled native windows on an interactive Windows 11 desktop.
-It requires neither a new production class nor a unit-test project. This
-tests-first layer leaves production code unchanged: the expected baseline result
+It requires neither a new production class nor a unit-test project. The
+tests-first layer (#18) leaves production code unchanged: the expected baseline result
 is **six behavioral failures and three passing controls**, with
 `InfrastructureError` equal to `null`. See [issue #16](https://github.com/giulioungaretti/PowerModeSlider/issues/16)
-for the bug investigation; the dependent fix layer will make the same tests green.
+for the bug investigation. The fixed app must make the **identical, unchanged
+harness GREEN: nine passing cases, zero failures, exit 0, and a null
+`InfrastructureError`**.
 
 From the repository root, build an isolated unpackaged app and run the harness.
 No Visual Studio, `winapp`, package installation, or replacement of an installed
@@ -127,7 +140,7 @@ and the corresponding `bin\x64` output path.
 dotnet build .\PowerModeSlider\PowerModeSlider.csproj --no-restore -c Debug -r win-arm64 -p:Platform=ARM64 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -p:TreatWarningsAsErrors=true
 # If assets/dependencies are missing, rerun the build without --no-restore.
 # Choose an existing directory outside the repository for the JSON report.
-$resultsPath = Join-Path $env:TEMP 'PowerModeSlider-flyout-red.json'
+$resultsPath = Join-Path $env:TEMP 'PowerModeSlider-flyout-results.json'
 pwsh -NoProfile -File .\scripts\Test-FlyoutDismissal.ps1 -AppPath .\PowerModeSlider\bin\ARM64\Debug\net10.0-windows10.0.19041.0\win-arm64\PowerModeSlider.exe -ResultsPath $resultsPath
 $LASTEXITCODE
 Get-Content -LiteralPath $resultsPath
@@ -153,7 +166,11 @@ focus-loss trial fail; all three controls pass. Inspect the JSON counts and
 the fixture, retry without changing assertions. Physical tray clicks and touch
 remain manual and unverified: the callback control is not a physical tray test.
 This interactive suite is not run by hosted CI, so ordinary Windows build checks
-can pass while these runtime regressions remain RED.
+can pass while these runtime regressions remain RED. The fixed app handles local
+deactivation immediately rather than delaying dismissal for 150 ms, retains the
+mouse hook for non-activating targets, and rejects stale queued dismissals after
+reopening. Primary owned-tray presses defer dismissal to toggling; release outside
+cancels that deferral. Right-click hides the slider before showing its context menu.
 
 ## Project Structure
 
@@ -161,6 +178,6 @@ can pass while these runtime regressions remain RED.
 PowerModeSlider/
 ├── PowerModeSlider/    # WinUI 3 tray application
 ├── PowerModeLib/       # .NET library for power mode APIs
-└── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
+├── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
+└── PowerModeSlider.Tests/ # UI-independent dismissal regression tests
 ```
-
