@@ -37,6 +37,7 @@ public sealed partial class MainWindow : Window
         var initialIconPath = GetIconPathForMode(ViewModel.SelectedModeIndex);
         _trayIcon = new TrayIcon(1, initialIconPath, "Power Mode Switcher");
         _trayIcon.IsVisible = true;
+        _flyoutWindow.SetTrayIcon(_trayIcon.TrayIconId);
 
         // Left-click toggles the flyout window
         _trayIcon.Selected += TrayIcon_Selected;
@@ -92,19 +93,12 @@ public sealed partial class MainWindow : Window
 
     private void TrayIcon_Selected(object? sender, TrayIconEventArgs e)
     {
-        // Toggle flyout visibility
-        if (_flyoutWindow.IsShowing)
-        {
-            _flyoutWindow.Hide();
-        }
-        else
-        {
-            _flyoutWindow.ShowFlyout();
-        }
+        _flyoutWindow.ToggleFromTray();
     }
 
     private void TrayIcon_ContextMenu(object? sender, TrayIconEventArgs e)
     {
+        _flyoutWindow.Hide();
         var flyout = new MenuFlyout();
 
         // Start with Windows toggle (packaged/MSIX builds only)
@@ -187,4 +181,3 @@ public sealed partial class MainWindow : Window
 
     #endregion
 }
-
