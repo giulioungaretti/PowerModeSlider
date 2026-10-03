@@ -33,7 +33,13 @@ dotnet build -c Debug -r win-x64
 winapp run .\bin\Debug\net10.0-windows10.0.19041.0\win-x64
 ```
 
-There are no automated tests or linters in this repo.
+There is no unit-test project or linter. The manual-desktop runtime harness is
+`scripts\Test-FlyoutDismissal.ps1`; see `readme.md` for unpackaged build/run commands.
+It tests an external executable without new production types. On unchanged main,
+expect exit 1 with six behavioral failures, three passing controls, and a null
+`InfrastructureError`. Exit 2 is a fixture/setup/cleanup failure, not RED evidence.
+Do not weaken assertions to obtain RED or GREEN. Hosted CI builds do not run this
+interactive suite; physical tray clicks and touch remain unverified.
 
 ## Packaging (MSIX) — publisher must match the cert
 
