@@ -108,13 +108,53 @@ manifest publisher before signing.
 
 > **Tip:** Increment the `Version` in `Package.appxmanifest` before re-packing to allow Windows to update the installed package.
 
+### Tests
+
+Run the UI-independent dismissal and tray-toggle regression tests:
+
+```powershell
+dotnet test .\PowerModeSlider.Tests\PowerModeSlider.Tests.csproj
+```
+
+These tests compile the same dismissal state and screen-bounds code used by the
+app, without loading WinUI or changing system power settings. CI runs them
+alongside the Windows builds. Actual mouse/touch input and Windows activation
+still require runtime checks.
+
+#### Runtime regression tests
+
+`scripts\Test-FlyoutDismissal.ps1` tests a **compiled executable**, without
+referencing or modifying its source. On an interactive Windows desktop, build
+an unpackaged app for the machine's architecture, then run the harness:
+
+```powershell
+dotnet build .\PowerModeSlider\PowerModeSlider.csproj -c Debug -r win-x64 -p:Platform=x64 -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true
+pwsh -NoProfile -File .\scripts\Test-FlyoutDismissal.ps1 -AppPath .\PowerModeSlider\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\PowerModeSlider.exe -ResultsPath .\runtime-results.json
+```
+
+For ARM64, substitute `win-arm64` and `Platform=ARM64`, including the executable
+path. The harness launches and stops only its own app instance, uses controlled
+native windows, briefly moves the cursor/focus, and restores them afterward.
+It exercises five early focus-loss trials, later focus loss, interior clicks,
+non-activating outside clicks, and repeated native tray-selection callbacks.
+It does not change slider/toggle settings or require replacing an installed app.
+
+Run the **same harness** against separately built unchanged and fixed binaries
+to establish red/green regression evidence. Exit code **0** means all nine
+runtime cases pass, **1** means behavioral assertions failed, and **2** means
+the runtime fixture failed and the run is not valid regression evidence.
+Optional JSON results record harness and application assembly hashes.
+
+The harness needs an interactive desktop and is not run on hosted CI. It does
+not verify physical tray-icon clicks or touchscreen input; those remain manual
+checks. The UI-independent unit tests continue to run in CI.
+
 ## Project Structure
 
 ```
 PowerModeSlider/
 ├── PowerModeSlider/    # WinUI 3 tray application
 ├── PowerModeLib/       # .NET library for power mode APIs
-└── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
+├── KeepAwakeLib/       # .NET library for keep-awake (SetThreadExecutionState)
+└── PowerModeSlider.Tests/ # UI-independent dismissal regression tests
 ```
-
-
